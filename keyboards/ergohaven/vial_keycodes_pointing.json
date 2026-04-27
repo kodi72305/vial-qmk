@@ -1,8 +1,8 @@
-,{"name": "EH_RSRV2", "shortName": "", "title": "Not using"}
-,{"name": "EH_RSRV3", "shortName": "", "title": "Not using"}
-,{"name": "EH_RSRV4", "shortName": "", "title": "Not using"}
-,{"name": "EH_RSRV5", "shortName": "", "title": "Not using"}
-,{"name": "EH_RSRV6", "shortName": "", "title": "Not using"}
+,{"name": "EH_RSRV2", "shortName": "Encode", "title": "Encoding key (output depends on key position on layer 10)"}
+,{"name": "EH_RSRV3", "shortName": "Del\nx4", "title": "Send Delete 4 times"}
+,{"name": "EH_RSRV4", "shortName": "Bsp\nx4", "title": "Send Backspace 4 times"}
+,{"name": "EH_RSRV5", "shortName": "Enc\nTabs", "title": "Encoder mode: browser tabs (Ctrl+Tab / Ctrl+Shift+Tab)"}
+,{"name": "EH_RSRV6", "shortName": "Enc\nDesk", "title": "Encoder mode: desktops (Win/Ctrl+Arrows)"}
 ,{"name": "EH_RSRV7", "shortName": "", "title": "Not using"}
 ,{"name": "EH_LED_BL", "shortName": "Tg Led\nBlinks", "title": "Enable/disable special protocol for Ergohaven Trackball Mini with led blinking"}
 ,{"name": "EH_SNP", "shortName": "Sniper\nmode", "title": "Sniper mode for trackball / touchpad"}

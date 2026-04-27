@@ -2,53 +2,13 @@
 #include "ergohaven.h"
 #include "ergohaven_pointing.h"
 
-enum user_keycodes {
-    CODE_A = EH_USR3 + 1,
-    CODE_B,
-    CODE_C,
-    CODE_D,
-    CODE_E,
-    CODE_F,
-    CODE_G,
-    CODE_H,
-    CODE_I,
-    CODE_J,
-    CODE_K,
-    CODE_L,
-    CODE_M,
-    CODE_N,
-    CODE_O,
-    CODE_P,
-    CODE_Q,
-    CODE_R,
-    CODE_S,
-    CODE_T,
-    CODE_U,
-    CODE_V,
-    CODE_W,
-    CODE_X,
-    CODE_Y,
-    CODE_Z,
+#define ENC_CODE   EH_RSRV2
+#define ENC_DEL4   EH_RSRV3
+#define ENC_BSPC4  EH_RSRV4
 
-    CODE_NUM_0,
-    CODE_NUM_1,
-    CODE_NUM_2,
-    CODE_NUM_3,
-    CODE_NUM_4,
-    CODE_NUM_5,
-    CODE_NUM_6,
-    CODE_NUM_7,
-    CODE_NUM_8,
-    CODE_NUM_9,
-
-    CODE_DEL4,
-    CODE_BSPC4,
-
-    ENC_MODE_TAB,
-    ENC_MODE_DESKTOP,
-    ENC_MODE_APP,
-    ENC_TAB,
-};
+#define ENC_MODE_TAB     EH_RSRV5
+#define ENC_MODE_DESKTOP EH_RSRV6
+#define ENC_MODE_APP     EH_RSRV1
 
 // clang-format off
 
@@ -157,18 +117,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, EH_SCR,  KC_BTN3, KC_BTN2, KC_BTN1, EH_SNP,                                               _______, _______, _______, _______, _______, _______,
-        ENC_MODE_TAB, ENC_MODE_DESKTOP, ENC_MODE_APP, ENC_TAB, _______, EH_TXT,                            _______, _______, _______, _______, _______, _______,
+        ENC_MODE_TAB, ENC_MODE_DESKTOP, ENC_MODE_APP, _______, _______, EH_TXT,                            _______, _______, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,
                                                                        _______,          _______
     ),
 
     [_TEN] = LAYOUT(
-        _______,  CODE_NUM_1, CODE_NUM_2, CODE_NUM_3, CODE_NUM_4, CODE_NUM_5,                               CODE_NUM_6, CODE_NUM_7, CODE_NUM_8, CODE_NUM_9, CODE_NUM_0, _______,
-        _______,  CODE_Q,     CODE_W,     CODE_E,     CODE_R,     CODE_T,                                   CODE_Y,     CODE_U,     CODE_I,     CODE_O,     CODE_P,     _______,
-        KC_LSFT,  CODE_A,     CODE_S,     CODE_D,     CODE_F,     CODE_G,                                   CODE_H,     CODE_J,     CODE_K,     CODE_L,     _______,    _______,
-        _______,  CODE_Z,     CODE_X,     CODE_C,     CODE_V,     CODE_B,                                   CODE_N,     CODE_M,     _______,    _______,    _______,    _______,
-                          _______, _______, _______, TO(_BASE), CODE_DEL4, MO(_BASE),     _______, _______, _______, _______, _______, _______,
-                                                                       CODE_BSPC4, _______
+        _______,  ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE,                                         ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, _______,
+        _______,  ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE,                                         ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, _______,
+        KC_LSFT,  ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE,                                         ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, _______,  _______,
+        _______,  ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE, ENC_CODE,                                         ENC_CODE, ENC_CODE, _______,  _______,  _______,  _______,
+                          _______, _______, _______, TO(_BASE), ENC_DEL4, MO(_BASE),     _______, _______, _______, _______, _______, _______,
+                                                                       ENC_BSPC4, _______
     ),
 };
 // clang-format on
@@ -243,44 +203,9 @@ static void run_encoding_macro(const uint16_t lower[4], const uint16_t upper[4],
 
 static bool is_encoding_keycode(uint16_t keycode) {
     switch (keycode) {
-        case CODE_A:
-        case CODE_B:
-        case CODE_C:
-        case CODE_D:
-        case CODE_E:
-        case CODE_F:
-        case CODE_G:
-        case CODE_H:
-        case CODE_I:
-        case CODE_J:
-        case CODE_K:
-        case CODE_L:
-        case CODE_M:
-        case CODE_N:
-        case CODE_O:
-        case CODE_P:
-        case CODE_Q:
-        case CODE_R:
-        case CODE_S:
-        case CODE_T:
-        case CODE_U:
-        case CODE_V:
-        case CODE_W:
-        case CODE_X:
-        case CODE_Y:
-        case CODE_Z:
-        case CODE_NUM_0:
-        case CODE_NUM_1:
-        case CODE_NUM_2:
-        case CODE_NUM_3:
-        case CODE_NUM_4:
-        case CODE_NUM_5:
-        case CODE_NUM_6:
-        case CODE_NUM_7:
-        case CODE_NUM_8:
-        case CODE_NUM_9:
-        case CODE_DEL4:
-        case CODE_BSPC4:
+        case ENC_CODE:
+        case ENC_DEL4:
+        case ENC_BSPC4:
             return true;
         default:
             return false;
@@ -329,23 +254,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         }
-
-        case ENC_TAB: {
-            static uint16_t       press_timer      = 0;
-            static encoder_mode_t prev_encoder_mode = ENCODER_MODE_VOL;
-
-            if (record->event.pressed) {
-                prev_encoder_mode = encoder_mode;
-                set_encoder_mode(ENCODER_MODE_TABS);
-                press_timer = timer_read();
-            } else {
-                set_encoder_mode(prev_encoder_mode);
-                if (timer_elapsed(press_timer) < get_tapping_term(keycode, record)) {
-                    tap_code(KC_TAB);
-                }
-            }
-            return false;
-        }
     }
 
     if (!is_encoding_keycode(keycode)) {
@@ -364,62 +272,75 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     clear_oneshot_mods();
 
     bool handled = true;
-    switch (keycode) {
-        case CODE_A: run_encoding_macro(enc_lower_A, enc_upper_A, shifted); break;
-        case CODE_B: run_encoding_macro(enc_lower_B, enc_upper_B, shifted); break;
-        case CODE_C: run_encoding_macro(enc_lower_C, enc_upper_C, shifted); break;
-        case CODE_D: run_encoding_macro(enc_lower_D, enc_upper_D, shifted); break;
-        case CODE_E: run_encoding_macro(enc_lower_E, enc_upper_E, shifted); break;
-        case CODE_F: run_encoding_macro(enc_lower_F, enc_upper_F, shifted); break;
-        case CODE_G: run_encoding_macro(enc_lower_G, enc_upper_G, shifted); break;
-        case CODE_H: run_encoding_macro(enc_lower_H, enc_upper_H, shifted); break;
-        case CODE_I: run_encoding_macro(enc_lower_I, enc_upper_I, shifted); break;
-        case CODE_J: run_encoding_macro(enc_lower_J, enc_upper_J, shifted); break;
-        case CODE_K: run_encoding_macro(enc_lower_K, enc_upper_K, shifted); break;
-        case CODE_L: run_encoding_macro(enc_lower_L, enc_upper_L, shifted); break;
-        case CODE_M: run_encoding_macro(enc_lower_M, enc_upper_M, shifted); break;
-        case CODE_N: run_encoding_macro(enc_lower_N, enc_upper_N, shifted); break;
-        case CODE_O: run_encoding_macro(enc_lower_O, enc_upper_O, shifted); break;
-        case CODE_P: run_encoding_macro(enc_lower_P, enc_upper_P, shifted); break;
-        case CODE_Q: run_encoding_macro(enc_lower_Q, enc_upper_Q, shifted); break;
-        case CODE_R: run_encoding_macro(enc_lower_R, enc_upper_R, shifted); break;
-        case CODE_S: run_encoding_macro(enc_lower_S, enc_upper_S, shifted); break;
-        case CODE_T: run_encoding_macro(enc_lower_T, enc_upper_T, shifted); break;
-        case CODE_U: run_encoding_macro(enc_lower_U, enc_upper_U, shifted); break;
-        case CODE_V: run_encoding_macro(enc_lower_V, enc_upper_V, shifted); break;
-        case CODE_W: run_encoding_macro(enc_lower_W, enc_upper_W, shifted); break;
-        case CODE_X: run_encoding_macro(enc_lower_X, enc_upper_X, shifted); break;
-        case CODE_Y: run_encoding_macro(enc_lower_Y, enc_upper_Y, shifted); break;
-        case CODE_Z: run_encoding_macro(enc_lower_Z, enc_upper_Z, shifted); break;
+    if (keycode == ENC_DEL4) {
+        tap_code(KC_DEL);
+        tap_code(KC_DEL);
+        tap_code(KC_DEL);
+        tap_code(KC_DEL);
+    } else if (keycode == ENC_BSPC4) {
+        tap_code(KC_BSPC);
+        tap_code(KC_BSPC);
+        tap_code(KC_BSPC);
+        tap_code(KC_BSPC);
+    } else if (keycode == ENC_CODE) {
+        const uint8_t row = record->event.key.row;
+        const uint8_t col = record->event.key.col;
 
-        case CODE_NUM_0: tap_seq4(enc_num_0); break;
-        case CODE_NUM_1: tap_seq4(enc_num_1); break;
-        case CODE_NUM_2: tap_seq4(enc_num_2); break;
-        case CODE_NUM_3: tap_seq4(enc_num_3); break;
-        case CODE_NUM_4: tap_seq4(enc_num_4); break;
-        case CODE_NUM_5: tap_seq4(enc_num_5); break;
-        case CODE_NUM_6: tap_seq4(enc_num_6); break;
-        case CODE_NUM_7: tap_seq4(enc_num_7); break;
-        case CODE_NUM_8: tap_seq4(enc_num_8); break;
-        case CODE_NUM_9: tap_seq4(enc_num_9); break;
+        handled = true;
 
-        case CODE_DEL4:
-            tap_code(KC_DEL);
-            tap_code(KC_DEL);
-            tap_code(KC_DEL);
-            tap_code(KC_DEL);
-            break;
+        // Explicit per-position mapping
+        {
+            handled = true;
+            // Digits
+            if (row == 0 && col == 1) tap_seq4(enc_num_1);
+            else if (row == 0 && col == 2) tap_seq4(enc_num_2);
+            else if (row == 0 && col == 3) tap_seq4(enc_num_3);
+            else if (row == 0 && col == 4) tap_seq4(enc_num_4);
+            else if (row == 0 && col == 5) tap_seq4(enc_num_5);
+            else if (row == 6 && col == 0) tap_seq4(enc_num_0);
+            else if (row == 6 && col == 1) tap_seq4(enc_num_9);
+            else if (row == 6 && col == 2) tap_seq4(enc_num_8);
+            else if (row == 6 && col == 3) tap_seq4(enc_num_7);
+            else if (row == 6 && col == 4) tap_seq4(enc_num_6);
 
-        case CODE_BSPC4:
-            tap_code(KC_BSPC);
-            tap_code(KC_BSPC);
-            tap_code(KC_BSPC);
-            tap_code(KC_BSPC);
-            break;
+            // QWERTY
+            else if (row == 1 && col == 1) run_encoding_macro(enc_lower_Q, enc_upper_Q, shifted);
+            else if (row == 1 && col == 2) run_encoding_macro(enc_lower_W, enc_upper_W, shifted);
+            else if (row == 1 && col == 3) run_encoding_macro(enc_lower_E, enc_upper_E, shifted);
+            else if (row == 1 && col == 4) run_encoding_macro(enc_lower_R, enc_upper_R, shifted);
+            else if (row == 1 && col == 5) run_encoding_macro(enc_lower_T, enc_upper_T, shifted);
 
-        default:
-            handled = false;
-            break;
+            else if (row == 7 && col == 1) run_encoding_macro(enc_lower_P, enc_upper_P, shifted);
+            else if (row == 7 && col == 2) run_encoding_macro(enc_lower_O, enc_upper_O, shifted);
+            else if (row == 7 && col == 3) run_encoding_macro(enc_lower_I, enc_upper_I, shifted);
+            else if (row == 7 && col == 4) run_encoding_macro(enc_lower_U, enc_upper_U, shifted);
+            else if (row == 7 && col == 5) run_encoding_macro(enc_lower_Y, enc_upper_Y, shifted);
+
+            // ASDFG / HJKL
+            else if (row == 2 && col == 1) run_encoding_macro(enc_lower_A, enc_upper_A, shifted);
+            else if (row == 2 && col == 2) run_encoding_macro(enc_lower_S, enc_upper_S, shifted);
+            else if (row == 2 && col == 3) run_encoding_macro(enc_lower_D, enc_upper_D, shifted);
+            else if (row == 2 && col == 4) run_encoding_macro(enc_lower_F, enc_upper_F, shifted);
+            else if (row == 2 && col == 5) run_encoding_macro(enc_lower_G, enc_upper_G, shifted);
+
+            else if (row == 8 && col == 1) run_encoding_macro(enc_lower_L, enc_upper_L, shifted);
+            else if (row == 8 && col == 2) run_encoding_macro(enc_lower_K, enc_upper_K, shifted);
+            else if (row == 8 && col == 3) run_encoding_macro(enc_lower_J, enc_upper_J, shifted);
+            else if (row == 8 && col == 4) run_encoding_macro(enc_lower_H, enc_upper_H, shifted);
+
+            // ZXCVB / NM
+            else if (row == 3 && col == 1) run_encoding_macro(enc_lower_Z, enc_upper_Z, shifted);
+            else if (row == 3 && col == 2) run_encoding_macro(enc_lower_X, enc_upper_X, shifted);
+            else if (row == 3 && col == 3) run_encoding_macro(enc_lower_C, enc_upper_C, shifted);
+            else if (row == 3 && col == 4) run_encoding_macro(enc_lower_V, enc_upper_V, shifted);
+            else if (row == 3 && col == 5) run_encoding_macro(enc_lower_B, enc_upper_B, shifted);
+
+            else if (row == 9 && col == 4) run_encoding_macro(enc_lower_M, enc_upper_M, shifted);
+            else if (row == 9 && col == 5) run_encoding_macro(enc_lower_N, enc_upper_N, shifted);
+            else handled = false;
+        }
+    } else {
+        handled = false;
     }
 
     set_mods(saved_mods);
