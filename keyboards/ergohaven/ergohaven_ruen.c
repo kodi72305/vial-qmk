@@ -19,33 +19,32 @@ static uint8_t english_word_prev_lang = LANG_EN;
 
 static bool mac_layout = false;
 
+static void toggle_lang_hotkey(void) {
+    uint8_t mods = get_mods();
+    if (mods != 0) del_mods(mods);
+
+    // Always use Win+Space to toggle OS input language.
+    register_code(KC_LGUI);
+    tap_code(KC_SPACE);
+    wait_ms(50);
+    unregister_code(KC_LGUI);
+    wait_ms(50);
+
+    if (mods != 0) add_mods(mods);
+}
+
 void set_lang(uint8_t lang) {
     uint8_t mods = get_mods();
     switch (tg_mode) {
         case TG_DEFAULT:
             if (cur_lang == lang) return;
             if (mods != 0) del_mods(mods);
-#ifdef EH_RUEN_SWITCH_ALT_SHIFT
-            register_code(KC_LALT);
-            tap_code(KC_LSFT);
+            // Always use Win+Space to toggle OS input language.
+            register_code(KC_LGUI);
+            tap_code(KC_SPACE);
             wait_ms(50);
-            unregister_code(KC_LALT);
+            unregister_code(KC_LGUI);
             wait_ms(50);
-#else
-            if (keymap_config.swap_lctl_lgui) {
-                register_code(KC_LCTL);
-                tap_code(KC_SPACE);
-                wait_ms(50);
-                unregister_code(KC_LCTL);
-                wait_ms(50);
-            } else {
-                register_code(KC_LGUI);
-                tap_code(KC_SPACE);
-                wait_ms(50);
-                unregister_code(KC_LGUI);
-                wait_ms(50);
-            }
-#endif
             if (mods != 0) add_mods(mods);
             break;
         case TG_M0:
@@ -71,15 +70,6 @@ void set_lang(uint8_t lang) {
             break;
     }
     cur_lang = lang;
-}
-
-static void set_lang_force(uint8_t lang) {
-    if (cur_lang == lang) {
-        // If our internal state is out of sync with the OS layout, force at least
-        // one switch attempt by pretending we're on the opposite layout.
-        cur_lang = (lang == LANG_EN) ? LANG_RU : LANG_EN;
-    }
-    set_lang(lang);
 }
 
 void set_ruen_toggle_mode(uint8_t mode) {
@@ -189,14 +179,15 @@ bool pre_process_record_ruen(uint16_t keycode, keyrecord_t *record) {
             case KC_COMMA:
             case KC_SCLN:
             case KC_QUOT:
-                case KC_SLASH:
-                case KC_BSLS:
-                case KC_LBRC:
-                case KC_RBRC:
-                    english_word = false;
-                    caps_word_off();
-                set_lang_force(english_word_prev_lang);
-                    break;
+            case KC_SLASH:
+            case KC_BSLS:
+            case KC_LBRC:
+            case KC_RBRC:
+                english_word = false;
+                caps_word_off();
+                toggle_lang_hotkey();
+                cur_lang = (cur_lang == LANG_EN) ? LANG_RU : LANG_EN;
+                break;
             default:
                 break;
         }
@@ -233,7 +224,8 @@ bool process_record_ruen(uint16_t keycode, keyrecord_t *record) {
 
     switch (keycode) {
         case LG_TOGGLE:
-            lang_toggle();
+            toggle_lang_hotkey();
+            cur_lang = (cur_lang == LANG_EN) ? LANG_RU : LANG_EN;
             return false;
 
         case LG_SYNC:
@@ -336,13 +328,13 @@ bool process_record_ruen(uint16_t keycode, keyrecord_t *record) {
 
         case LG_WORD: {
             if (!english_word) {
-                // This feature is intended for RU -> temporarily EN -> RU.
-                // Internal cur_lang can be out-of-sync after flashing; force a switch.
-                english_word_prev_lang = LANG_RU;
+                // Don't try to "detect" current layout; just toggle on entry/exit.
+                english_word_prev_lang = cur_lang;
                 english_word = true;
                 bool shift   = (get_mods() | get_oneshot_mods() | get_weak_mods()) & MOD_MASK_SHIFT;
                 if (get_oneshot_mods() & MOD_MASK_SHIFT) clear_oneshot_mods();
-                set_lang_force(LANG_EN);
+                toggle_lang_hotkey();
+                cur_lang = (cur_lang == LANG_EN) ? LANG_RU : LANG_EN;
                 if (shift) caps_word_on();
             }
             return false;
