@@ -2,7 +2,7 @@
 #include "ergohaven.h"
 #include "ergohaven_pointing.h"
 
-enum custom_keycodes {
+enum user_keycodes {
     CODE_A = SAFE_RANGE,
     CODE_B,
     CODE_C,
@@ -175,6 +175,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [2] = {ENCODER_CCW_CW(_______, _______)},
     [3] = {ENCODER_CCW_CW(_______, _______)},
     [4] = {ENCODER_CCW_CW(_______, _______)},
+    [_TEN] = {ENCODER_CCW_CW(_______, _______)},
 };
 #endif
 
@@ -235,7 +236,57 @@ static void run_encoding_macro(const uint16_t lower[4], const uint16_t upper[4],
     tap_seq4(shifted ? upper : lower);
 }
 
+static bool is_encoding_keycode(uint16_t keycode) {
+    switch (keycode) {
+        case CODE_A:
+        case CODE_B:
+        case CODE_C:
+        case CODE_D:
+        case CODE_E:
+        case CODE_F:
+        case CODE_G:
+        case CODE_H:
+        case CODE_I:
+        case CODE_J:
+        case CODE_K:
+        case CODE_L:
+        case CODE_M:
+        case CODE_N:
+        case CODE_O:
+        case CODE_P:
+        case CODE_Q:
+        case CODE_R:
+        case CODE_S:
+        case CODE_T:
+        case CODE_U:
+        case CODE_V:
+        case CODE_W:
+        case CODE_X:
+        case CODE_Y:
+        case CODE_Z:
+        case CODE_NUM_0:
+        case CODE_NUM_1:
+        case CODE_NUM_2:
+        case CODE_NUM_3:
+        case CODE_NUM_4:
+        case CODE_NUM_5:
+        case CODE_NUM_6:
+        case CODE_NUM_7:
+        case CODE_NUM_8:
+        case CODE_NUM_9:
+        case CODE_DEL4:
+        case CODE_BSPC4:
+            return true;
+        default:
+            return false;
+    }
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!is_encoding_keycode(keycode)) {
+        return true;
+    }
+
     if (!record->event.pressed) {
         return true;
     }
