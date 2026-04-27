@@ -43,6 +43,10 @@ enum user_keycodes {
 
     CODE_DEL4,
     CODE_BSPC4,
+
+    ENC_MODE_TAB,
+    ENC_MODE_DESKTOP,
+    ENC_MODE_APP,
 };
 
 // clang-format off
@@ -152,7 +156,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, EH_SCR,  KC_BTN3, KC_BTN2, KC_BTN1, EH_SNP,                                               _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, EH_TXT,                                               _______, _______, _______, _______, _______, _______,
+        ENC_MODE_TAB, ENC_MODE_DESKTOP, ENC_MODE_APP, _______, _______, EH_TXT,                            _______, _______, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,
                                                                        _______,          _______
     ),
@@ -282,7 +286,50 @@ static bool is_encoding_keycode(uint16_t keycode) {
     }
 }
 
+typedef enum {
+    ENCODER_MODE_VOL = 0,
+    ENCODER_MODE_TABS,
+    ENCODER_MODE_DESKTOPS,
+    ENCODER_MODE_APPS,
+} encoder_mode_t;
+
+static encoder_mode_t encoder_mode = ENCODER_MODE_VOL;
+
+static void set_encoder_mode(encoder_mode_t mode) {
+    encoder_mode = mode;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case ENC_MODE_TAB:
+        case ENC_MODE_DESKTOP:
+        case ENC_MODE_APP: {
+            static uint16_t       press_timer      = 0;
+            static encoder_mode_t prev_encoder_mode = ENCODER_MODE_VOL;
+
+            const encoder_mode_t new_mode = (keycode == ENC_MODE_TAB) ? ENCODER_MODE_TABS
+                                           : (keycode == ENC_MODE_DESKTOP) ? ENCODER_MODE_DESKTOPS
+                                                                           : ENCODER_MODE_APPS;
+
+            if (record->event.pressed) {
+                prev_encoder_mode = encoder_mode;
+                set_encoder_mode(new_mode);
+                press_timer = timer_read();
+            } else {
+                if (timer_elapsed(press_timer) < get_tapping_term(keycode, record)) {
+                    if (prev_encoder_mode == new_mode) {
+                        set_encoder_mode(ENCODER_MODE_VOL);
+                    } else {
+                        set_encoder_mode(new_mode);
+                    }
+                } else {
+                    set_encoder_mode(ENCODER_MODE_VOL);
+                }
+            }
+            return false;
+        }
+    }
+
     if (!is_encoding_keycode(keycode)) {
         return true;
     }
@@ -361,4 +408,40 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     set_oneshot_mods(saved_oneshot_mods);
 
     return !handled;
+}
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+    if (index != 0) {
+        return true;
+    }
+
+    const bool reverse = !clockwise;
+    const bool mac = split_get_mac();
+
+    switch (encoder_mode) {
+        case ENCODER_MODE_TABS:
+            tap_code16(reverse ? S(C(KC_TAB)) : C(KC_TAB));
+            return false;
+
+        case ENCODER_MODE_DESKTOPS:
+            if (mac) {
+                tap_code16(reverse ? C(KC_LEFT) : C(KC_RGHT));
+            } else {
+                tap_code16(reverse ? C(G(KC_LEFT)) : C(G(KC_RGHT)));
+            }
+            return false;
+
+        case ENCODER_MODE_APPS:
+            if (mac) {
+                tap_code16(reverse ? S(G(KC_TAB)) : G(KC_TAB));
+            } else {
+                tap_code16(reverse ? S(A(KC_TAB)) : A(KC_TAB));
+            }
+            return false;
+
+        case ENCODER_MODE_VOL:
+        default:
+            tap_code16(reverse ? KC_VOLD : KC_VOLU);
+            return false;
+    }
 }
