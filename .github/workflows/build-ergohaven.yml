@@ -2,49 +2,105 @@ name: Build Ergohaven
 
 on:
   workflow_call:
+    inputs:
+      kb:
+        description: Keyboard (e.g. ergohaven/hpd/rev2). If empty, builds all.
+        required: false
+        type: string
+      km:
+        description: Keymap (e.g. v2_enc_ball). If empty, builds all.
+        required: false
+        type: string
   workflow_dispatch:
+    inputs:
+      kb:
+        description: Keyboard (e.g. ergohaven/hpd/rev2). If empty, builds all.
+        required: false
+      km:
+        description: Keymap (e.g. v2_enc_ball). If empty, builds all.
+        required: false
   pull_request:
   push:
 
 jobs:
 
+  set-matrix:
+    name: Select build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - id: set
+        shell: bash
+        env:
+          KB: ${{ inputs.kb || github.event.inputs.kb }}
+          KM: ${{ inputs.km || github.event.inputs.km }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          kb = (os.getenv("KB") or "").strip()
+          km = (os.getenv("KM") or "").strip()
+
+          # Default: build only the primary Ergohaven HPD keymap.
+          if not kb and not km:
+              kb = "ergohaven/hpd/rev2"
+              km = "v2_enc_ball"
+
+          full = [
+              {"kb": "ergohaven/k03/rev1", "km": "v1_v2"},
+              {"kb": "ergohaven/k03/rev3", "km": "v3_v4"},
+              {"kb": "ergohaven/imperial44/rev1", "km": "v1_v2"},
+              {"kb": "ergohaven/imperial44/rev3", "km": "v3_v4"},
+              {"kb": "ergohaven/velvet/rev1", "km": "v1"},
+              {"kb": "ergohaven/velvet/rev2", "km": "v2"},
+              {"kb": "ergohaven/velvet/rev3", "km": "v3"},
+              {"kb": "ergohaven/hpd/rev1", "km": "v1"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_enc_ball"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_enc_touch"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_ball_enc"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_touch_enc"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_enc_enc"},
+              {"kb": "ergohaven/hpd/rev2", "km": "v2_enc_joy"},
+              {"kb": "ergohaven/k02", "km": "v1"},
+              {"kb": "ergohaven/remnant", "km": "v1"},
+              {"kb": "ergohaven/planeta/rev1", "km": "v1"},
+              {"kb": "ergohaven/planeta", "km": "v2"},
+              {"kb": "ergohaven/macropad/rev1", "km": "v1"},
+              {"kb": "ergohaven/macropad/rev2", "km": "v2"},
+              {"kb": "ergohaven/macropad/rev2", "km": "v2_ccw"},
+              {"kb": "ergohaven/macropad/rev3", "km": "v3"},
+              {"kb": "ergohaven/trackball", "km": "v1"},
+              {"kb": "ergohaven/trackball", "km": "v2"},
+              {"kb": "ergohaven/k03pro/rev1/43mm", "km": "v1"},
+              {"kb": "ergohaven/k03pro/rev1/65mm", "km": "v1"},
+              {"kb": "ergohaven/k03pro/rev2", "km": "v2_v3"},
+          ]
+
+          if (kb and not km) or (km and not kb):
+              raise SystemExit("Both 'kb' and 'km' must be set to build a single target.")
+
+          if kb and km:
+              matrix = {"include": [{"kb": kb, "km": km}]}
+          else:
+              matrix = {"include": full}
+
+          out = os.environ["GITHUB_OUTPUT"]
+          with open(out, "a", encoding="utf-8") as f:
+              f.write(f"matrix={json.dumps(matrix)}\n")
+          PY
+
   build-ergohaven:
     name: Build Ergohaven keymaps
+    needs: set-matrix
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli:latest
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - { kb: ergohaven/k03/rev1, km: v1_v2}
-          - { kb: ergohaven/k03/rev3, km: v3_v4}
-          - { kb: ergohaven/imperial44/rev1, km: v1_v2}
-          - { kb: ergohaven/imperial44/rev3, km: v3_v4}
-          - { kb: ergohaven/velvet/rev1, km: v1}
-          - { kb: ergohaven/velvet/rev2, km: v2}
-          - { kb: ergohaven/velvet/rev3, km: v3}
-          - { kb: ergohaven/hpd/rev1, km: v1}
-          - { kb: ergohaven/hpd/rev2, km: v2}
-          - { kb: ergohaven/hpd/rev2, km: v2_enc_ball}
-          - { kb: ergohaven/hpd/rev2, km: v2_enc_touch}
-          - { kb: ergohaven/hpd/rev2, km: v2_ball_enc}
-          - { kb: ergohaven/hpd/rev2, km: v2_touch_enc}
-          - { kb: ergohaven/hpd/rev2, km: v2_enc_enc}
-          - { kb: ergohaven/hpd/rev2, km: v2_enc_joy}
-          - { kb: ergohaven/k02, km: v1}
-          - { kb: ergohaven/remnant, km: v1}
-          - { kb: ergohaven/planeta/rev1, km: v1}
-          - { kb: ergohaven/planeta, km: v2}
-          - { kb: ergohaven/macropad/rev1, km: v1}
-          - { kb: ergohaven/macropad/rev2, km: v2}
-          - { kb: ergohaven/macropad/rev2, km: v2_ccw}
-          - { kb: ergohaven/macropad/rev3, km: v3}
-          - { kb: ergohaven/trackball, km: v1}
-          - { kb: ergohaven/trackball, km: v2}
-          - { kb: ergohaven/k03pro/rev1/43mm, km: v1}
-          - { kb: ergohaven/k03pro/rev1/65mm, km: v1}
-          - { kb: ergohaven/k03pro/rev2, km: v2_v3}
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
 
     steps:
     - name: (actions) Checkout Vial repo
