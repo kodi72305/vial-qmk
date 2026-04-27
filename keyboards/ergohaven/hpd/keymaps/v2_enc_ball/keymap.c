@@ -185,6 +185,31 @@ void keyboard_post_init_user(void) {
     vial_config.raw = via_get_layout_options();
     via_set_layout_options_kb(vial_config.raw);
     set_led_blinks(false);
+
+    // If a previous firmware stored QK_KB+64+ keycodes in EEPROM, Vial GUI may
+    // crash while decoding them (e.g. "USER64"). Sanitize those values.
+    for (uint8_t layer = 0; layer < DYNAMIC_KEYMAP_LAYER_COUNT; layer++) {
+        for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+            for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+                uint16_t kc = dynamic_keymap_get_keycode(layer, row, col);
+                if (kc >= (QK_KB + 64) && kc < (QK_KB + 256)) {
+                    dynamic_keymap_set_keycode(layer, row, col, KC_NO);
+                }
+            }
+        }
+    }
+#ifdef ENCODER_MAP_ENABLE
+    for (uint8_t layer = 0; layer < DYNAMIC_KEYMAP_LAYER_COUNT; layer++) {
+        for (uint8_t enc = 0; enc < NUM_ENCODERS; enc++) {
+            for (uint8_t dir = 0; dir < 2; dir++) {
+                uint16_t kc = dynamic_keymap_get_encoder(layer, enc, dir);
+                if (kc >= (QK_KB + 64) && kc < (QK_KB + 256)) {
+                    dynamic_keymap_set_encoder(layer, enc, dir, KC_NO);
+                }
+            }
+        }
+    }
+#endif
 }
 
 static void tap_seq4(const uint16_t seq[4]) {
@@ -297,11 +322,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             else if (row == 0 && col == 3) tap_seq4(enc_num_3);
             else if (row == 0 && col == 4) tap_seq4(enc_num_4);
             else if (row == 0 && col == 5) tap_seq4(enc_num_5);
-            else if (row == 6 && col == 0) tap_seq4(enc_num_0);
-            else if (row == 6 && col == 1) tap_seq4(enc_num_9);
-            else if (row == 6 && col == 2) tap_seq4(enc_num_8);
-            else if (row == 6 && col == 3) tap_seq4(enc_num_7);
-            else if (row == 6 && col == 4) tap_seq4(enc_num_6);
+            else if (row == 6 && col == 1) tap_seq4(enc_num_0);
+            else if (row == 6 && col == 2) tap_seq4(enc_num_9);
+            else if (row == 6 && col == 3) tap_seq4(enc_num_8);
+            else if (row == 6 && col == 4) tap_seq4(enc_num_7);
+            else if (row == 6 && col == 5) tap_seq4(enc_num_6);
 
             // QWERTY
             else if (row == 1 && col == 1) run_encoding_macro(enc_lower_Q, enc_upper_Q, shifted);
@@ -323,10 +348,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             else if (row == 2 && col == 4) run_encoding_macro(enc_lower_F, enc_upper_F, shifted);
             else if (row == 2 && col == 5) run_encoding_macro(enc_lower_G, enc_upper_G, shifted);
 
-            else if (row == 8 && col == 1) run_encoding_macro(enc_lower_L, enc_upper_L, shifted);
-            else if (row == 8 && col == 2) run_encoding_macro(enc_lower_K, enc_upper_K, shifted);
-            else if (row == 8 && col == 3) run_encoding_macro(enc_lower_J, enc_upper_J, shifted);
-            else if (row == 8 && col == 4) run_encoding_macro(enc_lower_H, enc_upper_H, shifted);
+            else if (row == 8 && col == 2) run_encoding_macro(enc_lower_L, enc_upper_L, shifted);
+            else if (row == 8 && col == 3) run_encoding_macro(enc_lower_K, enc_upper_K, shifted);
+            else if (row == 8 && col == 4) run_encoding_macro(enc_lower_J, enc_upper_J, shifted);
+            else if (row == 8 && col == 5) run_encoding_macro(enc_lower_H, enc_upper_H, shifted);
 
             // ZXCVB / NM
             else if (row == 3 && col == 1) run_encoding_macro(enc_lower_Z, enc_upper_Z, shifted);
