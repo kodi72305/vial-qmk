@@ -15,6 +15,8 @@ static bool should_revert_ru = false;
 
 static bool english_word = false;
 
+static uint8_t english_word_prev_lang = LANG_EN;
+
 static bool mac_layout = false;
 
 void set_lang(uint8_t lang) {
@@ -163,11 +165,20 @@ bool pre_process_record_ruen(uint16_t keycode, keyrecord_t *record) {
         switch (keycode & 0xFF) {
             case KC_SPACE:
             case KC_ENTER:
+            case KC_TAB:
             case KC_ESCAPE:
             case KC_MINUS:
+            case KC_DOT:
+            case KC_COMMA:
+            case KC_SCLN:
+            case KC_QUOT:
+            case KC_SLASH:
+            case KC_BSLS:
+            case KC_LBRC:
+            case KC_RBRC:
                 english_word = false;
                 caps_word_off();
-                set_lang(LANG_RU);
+                set_lang(english_word_prev_lang);
                 break;
             default:
                 break;
@@ -307,7 +318,8 @@ bool process_record_ruen(uint16_t keycode, keyrecord_t *record) {
         }
 
         case LG_WORD: {
-            if (cur_lang == LANG_RU && !english_word) {
+            if (!english_word) {
+                english_word_prev_lang = cur_lang;
                 english_word = true;
                 bool shift   = (get_mods() | get_oneshot_mods() | get_weak_mods()) & MOD_MASK_SHIFT;
                 if (get_oneshot_mods() & MOD_MASK_SHIFT) clear_oneshot_mods();
