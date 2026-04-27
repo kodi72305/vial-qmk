@@ -6,6 +6,7 @@
     },
     "customKeycodes": [
         #include "keyboards/ergohaven/vial_keycodes_base.json"
+        #include "keyboards/ergohaven/vial_keycodes_encoder.json"
         #include "keyboards/ergohaven/vial_keycodes_ruen.json"
         #include "keyboards/ergohaven/vial_keycodes_pointing.json"
     ],

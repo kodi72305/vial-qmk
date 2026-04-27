@@ -3,7 +3,7 @@
 #include "ergohaven_pointing.h"
 
 enum user_keycodes {
-    CODE_A = SAFE_RANGE,
+    CODE_A = EH_USR3 + 1,
     CODE_B,
     CODE_C,
     CODE_D,
@@ -47,6 +47,7 @@ enum user_keycodes {
     ENC_MODE_TAB,
     ENC_MODE_DESKTOP,
     ENC_MODE_APP,
+    ENC_TAB,
 };
 
 // clang-format off
@@ -156,7 +157,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______,                                              _______, _______, _______, _______, _______, _______,
         _______, EH_SCR,  KC_BTN3, KC_BTN2, KC_BTN1, EH_SNP,                                               _______, _______, _______, _______, _______, _______,
-        ENC_MODE_TAB, ENC_MODE_DESKTOP, ENC_MODE_APP, _______, _______, EH_TXT,                            _______, _______, _______, _______, _______, _______,
+        ENC_MODE_TAB, ENC_MODE_DESKTOP, ENC_MODE_APP, ENC_TAB, _______, EH_TXT,                            _______, _______, _______, _______, _______, _______,
                           _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,
                                                                        _______,          _______
     ),
@@ -324,6 +325,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     }
                 } else {
                     set_encoder_mode(ENCODER_MODE_VOL);
+                }
+            }
+            return false;
+        }
+
+        case ENC_TAB: {
+            static uint16_t       press_timer      = 0;
+            static encoder_mode_t prev_encoder_mode = ENCODER_MODE_VOL;
+
+            if (record->event.pressed) {
+                prev_encoder_mode = encoder_mode;
+                set_encoder_mode(ENCODER_MODE_TABS);
+                press_timer = timer_read();
+            } else {
+                set_encoder_mode(prev_encoder_mode);
+                if (timer_elapsed(press_timer) < get_tapping_term(keycode, record)) {
+                    tap_code(KC_TAB);
                 }
             }
             return false;

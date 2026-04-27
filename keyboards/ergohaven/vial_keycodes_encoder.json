@@ -1,0 +1,4 @@
+,{"name": "ENC_MODE_TAB", "shortName": "Enc\nTabs", "title": "Encoder: tabs mode (tap toggle, hold momentary)"}
+,{"name": "ENC_MODE_DESKTOP", "shortName": "Enc\nDesk", "title": "Encoder: desktops mode (tap toggle, hold momentary)"}
+,{"name": "ENC_MODE_APP", "shortName": "Enc\nApps", "title": "Encoder: apps mode (tap toggle, hold momentary)"}
+,{"name": "ENC_TAB", "shortName": "Tab/\nEncTabs", "title": "Tap sends Tab; hold temporarily sets encoder to tabs mode"}
